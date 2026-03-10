@@ -159,11 +159,11 @@ A custom-trained **EfficientNet-B0** convolutional neural network that runs enti
 
 ---
 
----
-
 ### Approach 3: YOLOv8 Object Detection (Localization)
 
 I also trained a **YOLOv8 Medium** object detection model that goes beyond classification — it draws **bounding boxes** around affected skin areas, showing exactly *where* and *how much* of the skin is impacted. This is critical for clinical assessment.
+
+The full training pipeline lives in [`Yolo model Implementation/`](Yolo%20model%20Implementation/) — a Jupyter notebook with all training outputs, confusion matrices, and test predictions preserved.
 
 **How it works:**
 1. Image resized to **800x800** and passed through the YOLOv8m backbone (CSPDarknet)
@@ -172,23 +172,90 @@ I also trained a **YOLOv8 Medium** object detection model that goes beyond class
 4. Anchor-free detection head predicts bounding boxes, objectness, and class probabilities
 5. Non-Maximum Suppression filters duplicate detections
 
+**YOLOv8m Detection Pipeline:**
+```
+  Input (800×800)
+        │
+        ▼
+  ┌──────────────────────┐
+  │  BACKBONE (CSPDarknet)│    Feature extraction at 3 scales
+  │  P3 (80×80) — small  │
+  │  P4 (40×40) — medium │
+  │  P5 (20×20) — large  │
+  └──────────┬───────────┘
+             │
+             ▼
+  ┌──────────────────────┐
+  │  NECK (PANet + FPN)   │    Fuses multi-scale features
+  │  Top-down + Bottom-up │    via bidirectional pathways
+  └──────────┬───────────┘
+             │
+             ▼
+  ┌──────────────────────┐
+  │  HEAD (Anchor-Free)   │    Per grid cell predicts:
+  │  • Bounding box (x,y, │    box coords + objectness
+  │    w,h)               │    + 11 class probabilities
+  │  • Class scores       │
+  └──────────┬───────────┘
+             │
+             ▼
+  ┌──────────────────────┐
+  │  NMS (Post-process)   │    Removes duplicate detections
+  │  conf threshold: 0.25 │    keeps highest confidence
+  └──────────┬───────────┘
+             │
+             ▼
+  Bounding boxes + labels + confidence scores
+```
+
+**Model Specs:**
+
 | Parameter | Value |
 |-----------|-------|
 | Architecture | YOLOv8m (Medium) |
 | Parameters | 25.8 Million |
+| Layers | 218 (fused) |
 | GFLOPs | 78.7 |
 | Epochs | 80 |
 | Input Size | 800 x 800 px |
-| Classes | 11 (Acne, Eczema, Psoriasis, Ringworm, Vitiligo, Warts, + more) |
+| GPU Used | 2x Tesla T4 (Kaggle) |
+| Framework | Ultralytics 8.2.85, PyTorch 2.4.0, CUDA 12.4 |
 | Inference Speed | **31.4ms/image** |
+
+**Per-Class Validation Results** (264 images, 863 instances):
+
+| Class | mAP50 | Precision | Recall |
+|-------|:-----:|:---------:|:------:|
+| Acne | 0.485 | 0.602 | 0.448 |
+| Chickenpox | 0.176 | 0.449 | 0.149 |
+| Eczema | **0.752** | 0.588 | 0.807 |
+| Monkeypox | 0.499 | 0.659 | 0.438 |
+| Pimple | 0.085 | 1.000 | 0.000 |
+| Psoriasis | **0.939** | 0.651 | 0.941 |
+| Ringworm | **0.818** | 0.464 | 0.933 |
+| Basal Cell Carcinoma | 0.244 | 0.376 | 0.192 |
+| Tinea Versicolor | 0.485 | 0.567 | 0.475 |
+| Vitiligo | 0.193 | 0.317 | 0.333 |
+| Warts | 0.426 | 0.430 | 0.542 |
+| **Overall** | **0.464** | **0.555** | **0.478** |
+
+Best performing: **Psoriasis** (93.9% mAP50), **Ringworm** (81.8%), **Eczema** (75.2%) — conditions with distinct visual patterns that YOLO picks up well.
+
+**Training artifacts generated:**
+- `confusion_matrix.png` — per-class detection accuracy and misclassifications
+- `results.png` — loss curves, precision, recall, mAP over 80 epochs
+- `F1_curve.png`, `PR_curve.png`, `P_curve.png`, `R_curve.png` — detailed metric curves
+- `val_batch*_pred.jpg` — validation predictions with bounding boxes drawn
+- `best.pt` — final trained weights for deployment
 
 **Benefits:**
 - **Localization** — shows *where* the condition is, not just *what* it is
 - **Multi-detection** — can find multiple conditions in a single image
 - **Spatial analysis** — bounding boxes reveal severity and spread
 - **Real-time capable** — 31ms inference on Tesla T4
+- **11 classes** — detects 2 more conditions than the main app (Chickenpox, Monkeypox, Basal Cell Carcinoma, Pimple added)
 
-> Full training notebook, architecture details, and per-class metrics available in [`Yolo model Implementation/`](Yolo%20model%20Implementation/)
+> See the full notebook with training outputs, confusion matrices, and test predictions: [`Yolo model Implementation/yolo_v8_skin_disease_detection.ipynb`](Yolo%20model%20Implementation/yolo_v8_skin_disease_detection.ipynb)
 
 ---
 
