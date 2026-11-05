@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+
+# Environment
+.env
+
+# IDE
+.vscode/
+.idea/
+.claude/
+
+# Model files (too large for git)
+*.pt
+*.pth
+
+# Uploads
+app/static/uploads/*
+!app/static/uploads/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.log
