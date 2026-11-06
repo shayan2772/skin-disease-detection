@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SkinCare AI{% endblock %}</title>
+
+    <!-- Google Fonts: Outfit + DM Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS v4 CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: '#0f172a',
+                        skyblue: '#e0f2fe',
+                        teal: '#0d9488',
+                        offwhite: '#fafbfc',
+                        warmgray: '#64748b',
+                    },
+                    fontFamily: {
+                        heading: ['Outfit', 'sans-serif'],
+                        body: ['DM Sans', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+
+    <!-- AOS.js CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
+
+    <style>
+        /* Font assignments */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Outfit', sans-serif;
+        }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            color: #64748b;
+            background: #fafbfc;
+        }
+
+        /* Animated gradient mesh background */
+        .gradient-mesh {
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(13, 148, 136, 0.12) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(14, 165, 233, 0.10) 0%, transparent 50%),
+                radial-gradient(ellipse at 60% 80%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 40% 30%, rgba(13, 148, 136, 0.06) 0%, transparent 50%);
+            background-size: 200% 200%;
+            animation: meshMove 20s ease-in-out infinite;
+        }
+        @keyframes meshMove {
+            0%, 100% { background-position: 0% 0%; }
+            25% { background-position: 50% 25%; }
+            50% { background-position: 100% 50%; }
+            75% { background-position: 25% 75%; }
+        }
+
+        /* Gradient CTA button */
+        .gradient-btn {
+            background: linear-gradient(135deg, #0d9488 0%, #0ea5e9 100%);
+            color: #ffffff;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px rgba(13, 148, 136, 0.3);
+        }
+        .gradient-btn:hover {
+            background: linear-gradient(135deg, #0b7e74 0%, #0c8dcc 100%);
+            box-shadow: 0 6px 20px rgba(13, 148, 136, 0.45);
+            transform: translateY(-1px);
+        }
+
+        /* Glass-morphism card */
+        .glass {
+            background: rgba(255, 255, 255, 0.70);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+        }
+
+        /* Smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+
+    {% block head %}{% endblock %}
+</head>
+<body class="antialiased">
+    {% block body %}{% endblock %}
+
+    <!-- AOS.js -->
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+    <!-- html2pdf.js for PDF report download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 100,
+        });
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>
