@@ -1,0 +1,522 @@
+{% extends "base.html" %}
+
+{% block title %}SkinCare AI — Instant Skin Disease Detection{% endblock %}
+
+{% block head %}
+<style>
+    /* Hero gradient mesh blob */
+    .hero-blob {
+        position: relative;
+        width: 100%;
+        max-width: 480px;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        filter: blur(0px);
+    }
+    .hero-blob::before,
+    .hero-blob::after,
+    .hero-blob .blob-layer-1,
+    .hero-blob .blob-layer-2 {
+        content: '';
+        position: absolute;
+        border-radius: 50%;
+        animation-timing-function: ease-in-out;
+        animation-iteration-count: infinite;
+    }
+    .hero-blob::before {
+        inset: 0;
+        background: radial-gradient(circle at 30% 40%, rgba(13, 148, 136, 0.55), transparent 70%);
+        animation: blobA 8s ease-in-out infinite alternate;
+    }
+    .hero-blob::after {
+        inset: 10%;
+        background: radial-gradient(circle at 70% 60%, rgba(14, 165, 233, 0.50), transparent 70%);
+        animation: blobB 10s ease-in-out infinite alternate;
+    }
+    .hero-blob .blob-layer-1 {
+        inset: 5%;
+        background: radial-gradient(circle at 50% 30%, rgba(99, 102, 241, 0.35), transparent 65%);
+        animation: blobC 12s ease-in-out infinite alternate;
+    }
+    .hero-blob .blob-layer-2 {
+        inset: 15%;
+        background: radial-gradient(circle at 40% 70%, rgba(13, 148, 136, 0.40), transparent 60%);
+        animation: blobD 9s ease-in-out infinite alternate;
+    }
+    @keyframes blobA {
+        0% { transform: scale(1) translate(0, 0); border-radius: 42% 58% 62% 38% / 45% 55% 45% 55%; }
+        100% { transform: scale(1.05) translate(4%, -3%); border-radius: 55% 45% 38% 62% / 58% 42% 58% 42%; }
+    }
+    @keyframes blobB {
+        0% { transform: scale(1) translate(0, 0); border-radius: 50% 50% 45% 55% / 55% 45% 50% 50%; }
+        100% { transform: scale(1.08) translate(-5%, 4%); border-radius: 40% 60% 55% 45% / 48% 52% 45% 55%; }
+    }
+    @keyframes blobC {
+        0% { transform: scale(1) rotate(0deg); border-radius: 60% 40% 50% 50% / 45% 55% 50% 50%; }
+        100% { transform: scale(0.95) rotate(10deg); border-radius: 45% 55% 42% 58% / 55% 45% 58% 42%; }
+    }
+    @keyframes blobD {
+        0% { transform: scale(1.02) translate(2%, 2%); border-radius: 48% 52% 55% 45% / 50% 50% 42% 58%; }
+        100% { transform: scale(0.97) translate(-3%, -2%); border-radius: 55% 45% 48% 52% / 42% 58% 55% 45%; }
+    }
+
+    /* Connecting line between How It Works cards */
+    .step-connector {
+        position: relative;
+    }
+    .step-connector::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: -2rem;
+        width: 4rem;
+        height: 2px;
+        background: linear-gradient(90deg, #0d9488, #0ea5e9);
+        transform: translateY(-50%);
+    }
+    @media (max-width: 767px) {
+        .step-connector::after {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+
+<!-- ==================== NAVIGATION ==================== -->
+<nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-white/20" id="navbar">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16 md:h-20">
+            <!-- Logo -->
+            <a href="/" class="flex items-center gap-2">
+                <svg class="w-8 h-8 text-teal" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="4" y="4" width="24" height="24" rx="6" stroke="currentColor" stroke-width="2.5"/>
+                    <path d="M16 10v12M10 16h12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <span class="text-xl font-bold font-heading text-navy">SkinCare<span class="text-teal">AI</span></span>
+            </a>
+
+            <!-- Desktop Nav -->
+            <div class="hidden md:flex items-center gap-8">
+                <a href="#how-it-works" class="text-sm font-medium text-warmgray hover:text-navy transition-colors">How It Works</a>
+                <a href="#conditions" class="text-sm font-medium text-warmgray hover:text-navy transition-colors">Conditions</a>
+                <a href="#features" class="text-sm font-medium text-warmgray hover:text-navy transition-colors">Features</a>
+                <a href="#about" class="text-sm font-medium text-warmgray hover:text-navy transition-colors">About</a>
+                <a href="/app" class="gradient-btn px-5 py-2.5 rounded-lg text-sm font-semibold font-heading">Try Free</a>
+            </div>
+
+            <!-- Hamburger -->
+            <button id="hamburger" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Toggle menu">
+                <span class="block w-6 h-0.5 bg-navy transition-all"></span>
+                <span class="block w-6 h-0.5 bg-navy transition-all"></span>
+                <span class="block w-6 h-0.5 bg-navy transition-all"></span>
+            </button>
+        </div>
+
+        <!-- Mobile Nav -->
+        <div id="mobile-nav" class="hidden md:hidden pb-4">
+            <div class="flex flex-col gap-3">
+                <a href="#how-it-works" class="mobile-link text-sm font-medium text-warmgray hover:text-navy transition-colors py-2">How It Works</a>
+                <a href="#conditions" class="mobile-link text-sm font-medium text-warmgray hover:text-navy transition-colors py-2">Conditions</a>
+                <a href="#features" class="mobile-link text-sm font-medium text-warmgray hover:text-navy transition-colors py-2">Features</a>
+                <a href="#about" class="mobile-link text-sm font-medium text-warmgray hover:text-navy transition-colors py-2">About</a>
+                <a href="/app" class="mobile-link gradient-btn px-5 py-2.5 rounded-lg text-sm font-semibold font-heading text-center">Try Free</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- ==================== HERO SECTION ==================== -->
+<section class="min-h-screen flex items-center pt-20 gradient-mesh overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+            <!-- Left: Text -->
+            <div class="flex-1 text-center lg:text-left">
+                <h1 data-aos="fade-up" class="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-heading text-navy leading-tight tracking-tight">
+                    Detect Skin Conditions<br>
+                    <span class="bg-gradient-to-r from-teal to-sky-500 bg-clip-text text-transparent">with AI Precision</span>
+                </h1>
+                <p data-aos="fade-up" data-aos-delay="100" class="mt-6 text-lg sm:text-xl text-warmgray max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                    Get instant AI-powered skin analysis from a photo. Our deep learning model identifies 9+ conditions and provides personalized expert advice — all in seconds.
+                </p>
+                <div data-aos="fade-up" data-aos-delay="200" class="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                    <a href="/app" class="gradient-btn px-8 py-3.5 rounded-xl text-base font-semibold font-heading text-center">
+                        Start Analysis
+                    </a>
+                    <a href="#how-it-works" class="px-8 py-3.5 rounded-xl text-base font-semibold font-heading text-navy border-2 border-navy/15 hover:border-teal hover:text-teal transition-all text-center">
+                        Learn More
+                    </a>
+                </div>
+
+                <!-- Stats row -->
+                <div data-aos="fade-up" data-aos-delay="300" class="mt-12 flex flex-wrap gap-4 justify-center lg:justify-start">
+                    <div class="glass rounded-xl px-5 py-3 flex items-center gap-3">
+                        <span class="text-2xl font-bold font-heading text-teal">9+</span>
+                        <span class="text-sm text-warmgray">Conditions</span>
+                    </div>
+                    <div class="glass rounded-xl px-5 py-3 flex items-center gap-3">
+                        <span class="text-2xl font-bold font-heading text-teal">95.5%</span>
+                        <span class="text-sm text-warmgray">Accuracy</span>
+                    </div>
+                    <div class="glass rounded-xl px-5 py-3 flex items-center gap-3">
+                        <svg class="w-6 h-6 text-teal" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714a2.25 2.25 0 0 0 .659 1.591L19 14.5m-4.75-11.396c.251.023.501.05.75.082M19 14.5l-2.47 2.47a3.375 3.375 0 0 1-4.06.52l-.17-.1a3.375 3.375 0 0 0-4.06.52L5 20.5"/></svg>
+                        <span class="text-sm text-warmgray">AI Doctor Advice</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Animated blob -->
+            <div data-aos="fade-left" data-aos-delay="200" class="flex-1 flex items-center justify-center w-full max-w-md lg:max-w-lg">
+                <div class="hero-blob">
+                    <div class="blob-layer-1"></div>
+                    <div class="blob-layer-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== CONDITIONS WE DETECT ==================== -->
+<section id="conditions" class="py-24 sm:py-32 gradient-mesh">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Heading -->
+        <div class="text-center mb-16" data-aos="fade-up">
+            <span class="inline-block px-4 py-1.5 rounded-full bg-teal/10 text-teal text-sm font-semibold font-heading mb-4">Detectable Conditions</span>
+            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold font-heading text-navy">Conditions We Detect</h2>
+            <p class="mt-4 text-warmgray text-lg max-w-2xl mx-auto">Our AI model is trained to identify and analyze these 9 skin conditions</p>
+        </div>
+
+        <!-- Conditions Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto">
+            <!-- Acanthosis Nigricans -->
+            <div data-aos="fade-up" data-aos-delay="0" class="glass rounded-2xl p-5 sm:p-6 text-center hover:shadow-lg transition-all hover:-translate-y-1">
+                <div class="w-12 h-12 rounded-full bg-teal/10 flex items-center justify-center mx-auto mb-3">
+                    <span class="text-xl">🔬</span>
+                </div>
+                <h3 class="font-heading font-semibold text-navy text-sm sm:text-base">Acanthosis Nigricans</h3>
+                <p class="text-warmgray text-xs mt-1 hidden sm:block">Dark, velvety skin patches</p>
+            </div>
+
+            <!-- Acne -->
+            <div data-aos="fade-up" data-aos-delay="50" class="glass rounded-2xl p-5 sm:p-6 text-center hover:shadow-lg transition-all hover:-translate-y-1">
+                <div class="w-12 h-12 rounded-full bg-teal/10 flex items-center justify-center mx-auto mb-3">
+                    <span class="text-xl">🩹</span>
+                </div>
+                <h3 class="font-heading font-semibold text-navy text-sm sm:text-base">Acne</h3>
+                <p class="text-warmgray text-xs mt-1 hidden sm:block">Pimples, blackheads, cysts</p>
+            </div>
+
+            <!-- Acne Scars -->
+            <div data-aos="fade-up" data-aos-delay="100" class="glass rounded-2xl p-5 sm:p-6 text-center hover:shadow-lg transition-all hover:-translate-y-1">
+                <div class="w-12 h-12 rounded-full bg-teal/10 flex items-center justify-center mx-auto mb-3">
+                    <span class="text-xl">📋</span>
+                </div>
+                <h3 class="font-heading font-semibold text-navy text-sm sm:text-base">Acne Scars</h3>
+                <p class="text-warmgray text-xs mt-1 hidden sm:block">Post-acne skin marks</p>
+            </div>
+
+            <!-- Alopecia Areata -->
+            <div data-aos="fade-up" data-aos-delay="150" class="glass rounded-2xl p-5 sm:p-6 text-center hover:shadow-lg transition-all hover:-translate-y-1">
+                <div class="w-12 h-12 rounded-full bg-teal/10 flex items-center justify-center mx-auto mb-3">
+                    <span class="text-xl">💇</span>
+                </div>
+                <h3 class="font-heading font-semibold text-navy text-sm sm:text-base">Alopecia Areata</h3>
+                <p class="text-warmgray text-xs mt-1 hidden sm:block">Patchy hair loss</p>
+            </div>
+
+            <!-- Dry Skin -->
+            <div data-aos="fade-up" data-aos-delay="200" class="glass rounded-2xl p-5 sm:p-6 text-center hover:shadow-lg transition-all hover:-translate-y-1">
+                <div class="w-12 h-12 rounded-full bg-teal/10 flex items-center justify-center mx-auto mb-3">
+                    <span class="text-xl">🏜️</span>
+                </div>
+                <h3 class="font-heading font-semibold text-navy text-sm sm:text-base">Dry Skin</h3>
+                <p class="text-warmgray text-xs mt-1 hidden sm:block">Rough, flaky skin</p>
+            </div>
+
+            <!-- Melasma -->
+            <div data-aos="fade-up" data-aos-delay="250" class="glass rounded-2xl p-5 sm:p-6 text-center hover:shadow-lg transition-all hover:-translate-y-1">
+                <div class="w-12 h-12 rounded-full bg-teal/10 flex items-center justify-center mx-auto mb-3">
+                    <span class="text-xl">🎨</span>
+                </div>
+                <h3 class="font-heading font-semibold text-navy text-sm sm:text-base">Melasma</h3>
+                <p class="text-warmgray text-xs mt-1 hidden sm:block">Dark patches on face</p>
+            </div>
+
+            <!-- Oily Skin -->
+            <div data-aos="fade-up" data-aos-delay="300" class="glass rounded-2xl p-5 sm:p-6 text-center hover:shadow-lg transition-all hover:-translate-y-1">
+                <div class="w-12 h-12 rounded-full bg-teal/10 flex items-center justify-center mx-auto mb-3">
+                    <span class="text-xl">💧</span>
+                </div>
+                <h3 class="font-heading font-semibold text-navy text-sm sm:text-base">Oily Skin</h3>
+                <p class="text-warmgray text-xs mt-1 hidden sm:block">Excess sebum production</p>
+            </div>
+
+            <!-- Vitiligo -->
+            <div data-aos="fade-up" data-aos-delay="350" class="glass rounded-2xl p-5 sm:p-6 text-center hover:shadow-lg transition-all hover:-translate-y-1">
+                <div class="w-12 h-12 rounded-full bg-teal/10 flex items-center justify-center mx-auto mb-3">
+                    <span class="text-xl">🤍</span>
+                </div>
+                <h3 class="font-heading font-semibold text-navy text-sm sm:text-base">Vitiligo</h3>
+                <p class="text-warmgray text-xs mt-1 hidden sm:block">Loss of skin pigment</p>
+            </div>
+
+            <!-- Warts -->
+            <div data-aos="fade-up" data-aos-delay="400" class="glass rounded-2xl p-5 sm:p-6 text-center hover:shadow-lg transition-all hover:-translate-y-1">
+                <div class="w-12 h-12 rounded-full bg-teal/10 flex items-center justify-center mx-auto mb-3">
+                    <span class="text-xl">🦠</span>
+                </div>
+                <h3 class="font-heading font-semibold text-navy text-sm sm:text-base">Warts</h3>
+                <p class="text-warmgray text-xs mt-1 hidden sm:block">HPV-caused skin growths</p>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="text-center mt-12" data-aos="fade-up">
+            <a href="/app" class="gradient-btn inline-block px-8 py-3.5 rounded-xl text-base font-semibold font-heading">
+                Analyze Your Skin Now
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== HOW IT WORKS ==================== -->
+<section id="how-it-works" class="py-24 sm:py-32">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Heading -->
+        <div class="text-center mb-16" data-aos="fade-up">
+            <span class="inline-block px-4 py-1.5 rounded-full bg-teal/10 text-teal text-sm font-semibold font-heading mb-4">Simple Process</span>
+            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold font-heading text-navy">How It Works</h2>
+            <p class="mt-4 text-warmgray text-lg max-w-2xl mx-auto">Three simple steps to understand your skin health better</p>
+        </div>
+
+        <!-- Steps -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6 relative">
+            <!-- Step 1 -->
+            <div data-aos="fade-up" data-aos-delay="0" class="step-connector">
+                <div class="glass rounded-2xl p-8 text-center hover:shadow-lg transition-shadow h-full">
+                    <div class="w-16 h-16 rounded-2xl bg-teal/10 flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-8 h-8 text-teal" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Z"/>
+                        </svg>
+                    </div>
+                    <span class="inline-block text-xs font-bold font-heading text-teal bg-teal/10 rounded-full px-3 py-1 mb-4">Step 1</span>
+                    <h3 class="text-xl font-bold font-heading text-navy mb-3">Upload Your Photo</h3>
+                    <p class="text-warmgray leading-relaxed">Take or upload a clear photo of the affected skin area using your device camera or gallery.</p>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div data-aos="fade-up" data-aos-delay="150" class="step-connector">
+                <div class="glass rounded-2xl p-8 text-center hover:shadow-lg transition-shadow h-full">
+                    <div class="w-16 h-16 rounded-2xl bg-teal/10 flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-8 h-8 text-teal" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 0 0-2.455 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"/>
+                        </svg>
+                    </div>
+                    <span class="inline-block text-xs font-bold font-heading text-teal bg-teal/10 rounded-full px-3 py-1 mb-4">Step 2</span>
+                    <h3 class="text-xl font-bold font-heading text-navy mb-3">AI Analysis</h3>
+                    <p class="text-warmgray leading-relaxed">Our EfficientNet model analyzes your image with 95.5% accuracy using state-of-the-art deep learning.</p>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div data-aos="fade-up" data-aos-delay="300">
+                <div class="glass rounded-2xl p-8 text-center hover:shadow-lg transition-shadow h-full">
+                    <div class="w-16 h-16 rounded-2xl bg-teal/10 flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-8 h-8 text-teal" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"/>
+                        </svg>
+                    </div>
+                    <span class="inline-block text-xs font-bold font-heading text-teal bg-teal/10 rounded-full px-3 py-1 mb-4">Step 3</span>
+                    <h3 class="text-xl font-bold font-heading text-navy mb-3">Expert Advice</h3>
+                    <p class="text-warmgray leading-relaxed">Receive personalized skincare recommendations from our AI dermatologist powered by advanced LLM technology.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== FEATURES ==================== -->
+<section id="features" class="py-24 sm:py-32 gradient-mesh">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Heading -->
+        <div class="text-center mb-16" data-aos="fade-up">
+            <span class="inline-block px-4 py-1.5 rounded-full bg-teal/10 text-teal text-sm font-semibold font-heading mb-4">Features</span>
+            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold font-heading text-navy">Why Choose SkinCare AI</h2>
+            <p class="mt-4 text-warmgray text-lg max-w-2xl mx-auto">Advanced technology meets clinical accuracy for the best skin health experience</p>
+        </div>
+
+        <!-- 2x2 Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8 max-w-4xl mx-auto">
+            <!-- Feature 1 -->
+            <div data-aos="fade-up" data-aos-delay="0" class="glass rounded-2xl p-8 hover:shadow-lg transition-all hover:-translate-y-1">
+                <div class="w-12 h-12 rounded-xl bg-teal/10 flex items-center justify-center mb-5">
+                    <svg class="w-6 h-6 text-teal" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25a2.25 2.25 0 0 1-2.25-2.25v-2.25Z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold font-heading text-navy mb-2">9 Skin Conditions</h3>
+                <p class="text-warmgray leading-relaxed">Detects acne, acne scars, vitiligo, warts, melasma, alopecia areata, acanthosis nigricans, and skin type analysis.</p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div data-aos="fade-up" data-aos-delay="100" class="glass rounded-2xl p-8 hover:shadow-lg transition-all hover:-translate-y-1">
+                <div class="w-12 h-12 rounded-xl bg-teal/10 flex items-center justify-center mb-5">
+                    <svg class="w-6 h-6 text-teal" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold font-heading text-navy mb-2">95.5% Accuracy</h3>
+                <p class="text-warmgray leading-relaxed">Powered by EfficientNet-B0 deep learning model, trained on thousands of dermatology images for clinical-grade results.</p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div data-aos="fade-up" data-aos-delay="200" class="glass rounded-2xl p-8 hover:shadow-lg transition-all hover:-translate-y-1">
+                <div class="w-12 h-12 rounded-xl bg-teal/10 flex items-center justify-center mb-5">
+                    <svg class="w-6 h-6 text-teal" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold font-heading text-navy mb-2">AI Doctor</h3>
+                <p class="text-warmgray leading-relaxed">Get personalized medical advice from an AI dermatologist powered by large language models, tailored to your specific condition.</p>
+            </div>
+
+            <!-- Feature 4 -->
+            <div data-aos="fade-up" data-aos-delay="300" class="glass rounded-2xl p-8 hover:shadow-lg transition-all hover:-translate-y-1">
+                <div class="w-12 h-12 rounded-xl bg-teal/10 flex items-center justify-center mb-5">
+                    <svg class="w-6 h-6 text-teal" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold font-heading text-navy mb-2">Instant Results</h3>
+                <p class="text-warmgray leading-relaxed">Get your diagnosis in under 10 seconds. No appointments, no waiting rooms — just fast, reliable skin analysis anytime.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== STATS / SOCIAL PROOF ==================== -->
+<section id="about" class="py-24 sm:py-32 relative overflow-hidden">
+    <div class="absolute inset-0 gradient-mesh opacity-60"></div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="text-center mb-16" data-aos="fade-up">
+            <span class="inline-block px-4 py-1.5 rounded-full bg-teal/10 text-teal text-sm font-semibold font-heading mb-4">The Need</span>
+            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold font-heading text-navy">Skin Health Matters</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <div data-aos="zoom-in" data-aos-delay="0" class="text-center">
+                <div class="glass rounded-2xl p-8">
+                    <span class="block text-5xl sm:text-6xl font-extrabold font-heading bg-gradient-to-r from-teal to-sky-500 bg-clip-text text-transparent">1 in 3</span>
+                    <p class="mt-4 text-warmgray text-base leading-relaxed">People affected by skin conditions globally at any given time</p>
+                </div>
+            </div>
+            <div data-aos="zoom-in" data-aos-delay="150" class="text-center">
+                <div class="glass rounded-2xl p-8">
+                    <span class="block text-5xl sm:text-6xl font-extrabold font-heading bg-gradient-to-r from-teal to-sky-500 bg-clip-text text-transparent">5.4B</span>
+                    <p class="mt-4 text-warmgray text-base leading-relaxed">Annual dermatology visits worldwide each year</p>
+                </div>
+            </div>
+            <div data-aos="zoom-in" data-aos-delay="300" class="text-center">
+                <div class="glass rounded-2xl p-8">
+                    <span class="block text-5xl sm:text-6xl font-extrabold font-heading bg-gradient-to-r from-teal to-sky-500 bg-clip-text text-transparent">&lt; 10s</span>
+                    <p class="mt-4 text-warmgray text-base leading-relaxed">Average analysis time with SkinCare AI</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== FINAL CTA ==================== -->
+<section class="py-24 sm:py-32 bg-navy relative overflow-hidden">
+    <div class="absolute inset-0 opacity-20">
+        <div class="absolute inset-0" style="background: radial-gradient(ellipse at 30% 50%, rgba(13,148,136,0.4) 0%, transparent 60%), radial-gradient(ellipse at 70% 50%, rgba(14,165,233,0.3) 0%, transparent 60%);"></div>
+    </div>
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+        <h2 data-aos="fade-up" class="text-3xl sm:text-4xl lg:text-5xl font-bold font-heading text-white leading-tight">
+            Ready to understand your<br>skin better?
+        </h2>
+        <p data-aos="fade-up" data-aos-delay="100" class="mt-6 text-lg text-slate-300 max-w-xl mx-auto leading-relaxed">
+            Get instant AI-powered skin analysis and personalized care advice. No sign-up required.
+        </p>
+        <div data-aos="fade-up" data-aos-delay="200" class="mt-10">
+            <a href="/app" class="gradient-btn inline-block px-10 py-4 rounded-xl text-lg font-semibold font-heading">
+                Start Your Free Analysis
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== FOOTER ==================== -->
+<footer class="bg-navy border-t border-white/5 pt-16 pb-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+            <!-- Brand -->
+            <div>
+                <div class="flex items-center gap-2 mb-4">
+                    <svg class="w-7 h-7 text-teal" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="4" y="4" width="24" height="24" rx="6" stroke="currentColor" stroke-width="2.5"/>
+                        <path d="M16 10v12M10 16h12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                    </svg>
+                    <span class="text-lg font-bold font-heading text-white">SkinCare<span class="text-teal">AI</span></span>
+                </div>
+                <p class="text-slate-400 text-sm leading-relaxed max-w-xs">AI-powered skin disease detection and personalized dermatology advice. Fast, accurate, and accessible to everyone.</p>
+            </div>
+
+            <!-- Quick Links -->
+            <div>
+                <h4 class="text-sm font-semibold font-heading text-white uppercase tracking-wider mb-4">Quick Links</h4>
+                <ul class="space-y-3">
+                    <li><a href="/" class="text-slate-400 hover:text-teal transition-colors text-sm">Home</a></li>
+                    <li><a href="#how-it-works" class="text-slate-400 hover:text-teal transition-colors text-sm">How It Works</a></li>
+                    <li><a href="#features" class="text-slate-400 hover:text-teal transition-colors text-sm">Features</a></li>
+                    <li><a href="/app" class="text-slate-400 hover:text-teal transition-colors text-sm">Try App</a></li>
+                </ul>
+            </div>
+
+            <!-- Legal -->
+            <div>
+                <h4 class="text-sm font-semibold font-heading text-white uppercase tracking-wider mb-4">Legal</h4>
+                <ul class="space-y-3">
+                    <li><a href="#" class="text-slate-400 hover:text-teal transition-colors text-sm">Privacy Policy</a></li>
+                    <li><a href="#" class="text-slate-400 hover:text-teal transition-colors text-sm">Terms of Service</a></li>
+                    <li><a href="#" class="text-slate-400 hover:text-teal transition-colors text-sm">Disclaimer</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="border-t border-white/10 pt-8 mb-6">
+            <p class="text-xs text-slate-500 leading-relaxed text-center max-w-2xl mx-auto">
+                SkinCare AI is not a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider for medical concerns. Results are for informational purposes only.
+            </p>
+        </div>
+
+        <!-- Copyright -->
+        <div class="text-center">
+            <p class="text-xs text-slate-500">&copy; 2026 SkinCare AI. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Mobile nav toggle
+    const hamburger = document.getElementById('hamburger');
+    const mobileNav = document.getElementById('mobile-nav');
+
+    hamburger.addEventListener('click', function () {
+        mobileNav.classList.toggle('hidden');
+    });
+
+    // Close mobile nav when a link is clicked
+    document.querySelectorAll('.mobile-link').forEach(function (link) {
+        link.addEventListener('click', function () {
+            mobileNav.classList.add('hidden');
+        });
+    });
+</script>
+{% endblock %}
