@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}Analyze — SkinCare AI{% endblock %}
+
+{% block head %}
+<style>
+    /* Spinner */
+    .spinner {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 4px solid rgba(13, 148, 136, 0.15);
+        border-top-color: #0d9488;
+        animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Pulse rings behind spinner */
+    .pulse-ring {
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: 2px solid rgba(13, 148, 136, 0.2);
+        animation: pulseRing 2s ease-out infinite;
+    }
+    .pulse-ring:nth-child(2) { animation-delay: 0.6s; }
+    .pulse-ring:nth-child(3) { animation-delay: 1.2s; }
+    @keyframes pulseRing {
+        0% { transform: scale(0.8); opacity: 1; }
+        100% { transform: scale(1.8); opacity: 0; }
+    }
+
+    /* Skeleton loader for advice */
+    .skeleton-line {
+        height: 14px;
+        border-radius: 6px;
+        background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    /* Toast slide in */
+    .toast-enter {
+        animation: slideIn 0.35s ease-out forwards;
+    }
+    .toast-exit {
+        animation: slideOut 0.3s ease-in forwards;
+    }
+    @keyframes slideIn {
+        from { transform: translateY(-20px); opacity: 0; }
+        to   { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateY(0); opacity: 1; }
+        to   { transform: translateY(-20px); opacity: 0; }
+    }
+
+    /* Drop zone highlight */
+    .drop-highlight {
+        border-color: #0d9488 !important;
+        border-style: solid !important;
+        background-color: rgba(13, 148, 136, 0.05) !important;
+    }
+
+    /* Advice rendered content */
+    #advice-content h4 {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #0f172a;
+        margin-top: 1rem;
+        margin-bottom: 0.35rem;
+    }
+    #advice-content p {
+        margin-bottom: 0.5rem;
+        line-height: 1.65;
+    }
+    #advice-content ul, #advice-content ol {
+        margin-left: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+    #advice-content li {
+        margin-bottom: 0.25rem;
+        line-height: 1.6;
+    }
+    #advice-content ul li { list-style-type: disc; }
+    #advice-content ol li { list-style-type: decimal; }
+    #advice-content strong { color: #0f172a; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen gradient-mesh">
+
+    <!-- ─── Top Nav Bar ─── -->
+    <nav class="sticky top-0 z-50 glass border-b border-white/30">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <!-- Left: back + logo -->
+            <a href="/" class="flex items-center gap-2 text-navy hover:text-teal transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+                <span class="font-heading font-bold text-lg tracking-tight">SkinCare AI</span>
+            </a>
+            <!-- Right: New Analysis (hidden initially) -->
+            <button id="nav-new-analysis" class="hidden gradient-btn px-4 py-2 rounded-xl text-sm font-medium">
+                New Analysis
+            </button>
+        </div>
+    </nav>
+
+    <!-- ─── Toast Container ─── -->
+    <div id="toast-container" class="fixed top-20 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 items-center pointer-events-none"></div>
+
+    <!-- ─── Main Content ─── -->
+    <main class="max-w-2xl mx-auto px-4 sm:px-6 py-10">
+
+        <!-- ════════ Upload Section ════════ -->
+        <section id="upload-section">
+            <div class="text-center mb-8" data-aos="fade-up">
+                <h1 class="font-heading text-3xl sm:text-4xl font-bold text-navy mb-3">Analyze Your Skin</h1>
+                <p class="text-warmgray text-base sm:text-lg max-w-md mx-auto">Upload a clear photo of the affected area for instant AI-powered analysis</p>
+            </div>
+
+            <!-- Drop Zone -->
+            <div id="drop-zone" class="relative border-2 border-dashed border-gray-300 rounded-2xl min-h-[300px] flex flex-col items-center justify-center gap-4 cursor-pointer transition-all duration-200 hover:border-teal/60 bg-white/40 px-6 py-10" data-aos="fade-up" data-aos-delay="100">
+                <!-- Upload icon -->
+                <div class="w-16 h-16 rounded-2xl bg-teal/10 flex items-center justify-center mb-1">
+                    <svg class="w-8 h-8 text-teal" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.338-2.32 3.75 3.75 0 013.572 5.345A4.5 4.5 0 0117.25 19.5H6.75z"/>
+                    </svg>
+                </div>
+                <p class="text-navy font-heading font-semibold text-lg">Drag &amp; drop your image here</p>
+                <div class="flex items-center gap-3 w-full max-w-[200px]">
+                    <span class="flex-1 h-px bg-gray-300"></span>
+                    <span class="text-warmgray text-sm">or</span>
+                    <span class="flex-1 h-px bg-gray-300"></span>
+                </div>
+                <button type="button" id="browse-btn" class="gradient-btn px-6 py-2.5 rounded-xl font-medium text-sm">Browse Files</button>
+                <input type="file" id="file-input" class="hidden" accept="image/png,image/jpeg,image/webp">
+            </div>
+
+            <!-- Preview Area -->
+            <div id="preview-area" class="hidden mt-6 glass rounded-2xl p-6" data-aos="fade-up">
+                <div class="flex flex-col items-center gap-4">
+                    <img id="preview-image" class="rounded-xl max-h-64 w-auto object-cover shadow-sm" src="" alt="Preview">
+                    <div class="text-center">
+                        <p id="file-name" class="text-navy font-medium text-sm"></p>
+                        <p id="file-size" class="text-warmgray text-xs mt-0.5"></p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button id="remove-btn" class="px-4 py-2 rounded-xl border border-gray-300 text-warmgray text-sm font-medium hover:border-rose-300 hover:text-rose-500 transition-colors">Remove</button>
+                        <button id="analyze-btn" class="gradient-btn px-8 py-3 rounded-xl font-semibold text-base">Analyze Now</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Supported formats -->
+            <p class="text-center text-warmgray text-xs mt-4">Supports PNG, JPG, JPEG, WEBP &mdash; Max 16 MB</p>
+        </section>
+
+        <!-- ════════ Loading Section ════════ -->
+        <section id="loading-section" class="hidden py-20">
+            <div class="flex flex-col items-center gap-6">
+                <div class="relative flex items-center justify-center w-24 h-24">
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                    <div class="spinner"></div>
+                </div>
+                <div class="text-center">
+                    <p class="font-heading text-navy font-semibold text-lg">Analyzing your skin...</p>
+                    <p class="text-warmgray text-sm mt-1">This usually takes a few seconds</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ════════ Results Section ════════ -->
+        <section id="results-section" class="hidden space-y-6">
+
+            <!-- Diagnosis Card -->
+            <div class="glass rounded-2xl p-6 sm:p-8" data-aos="fade-up">
+                <div class="flex flex-col sm:flex-row gap-6 items-start">
+                    <!-- Uploaded image preview -->
+                    <div class="flex-shrink-0">
+                        <img id="result-image" class="rounded-xl w-32 h-32 sm:w-40 sm:h-40 object-cover shadow-sm" src="" alt="Analyzed skin image">
+                    </div>
+                    <!-- Diagnosis info -->
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="inline-block text-teal text-xs font-semibold uppercase tracking-wider">Diagnosis</span>
+                            <span id="source-badge" class="hidden text-[10px] font-medium px-2 py-0.5 rounded-full leading-tight"></span>
+                        </div>
+                        <h2 id="prediction-text" class="font-heading text-2xl sm:text-3xl font-bold text-navy"></h2>
+                        <!-- Confidence bar -->
+                        <div id="confidence-section" class="mt-4">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-sm text-warmgray">Confidence</span>
+                                <span id="confidence-value" class="text-sm font-semibold text-navy"></span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div id="confidence-bar" class="h-2.5 rounded-full transition-all duration-700 ease-out" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <!-- Low confidence warning -->
+                        <div id="low-confidence-warning" class="hidden mt-3 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                            Low confidence detection. The image may not match any of the 9 supported conditions. Please consult a dermatologist.
+                        </div>
+                    </div>
+                </div>
+                <div class="h-px bg-gray-200 mt-4"></div>
+            </div>
+
+            <!-- AI Advice Panel -->
+            <div class="glass rounded-2xl p-6 sm:p-8" data-aos="fade-up" data-aos-delay="100">
+                <!-- Header -->
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="w-10 h-10 rounded-full bg-teal/10 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5 text-teal" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714a2.25 2.25 0 00.659 1.591L19 14.5M14.25 3.104c.251.023.501.05.75.082M19 14.5l-1.47 4.412a2.25 2.25 0 01-2.133 1.588H8.603a2.25 2.25 0 01-2.134-1.588L5 14.5m14 0H5"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="font-heading font-semibold text-navy text-sm">Dr. SkinCare AI</p>
+                        <span id="model-badge" class="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full bg-teal/10 text-teal leading-tight"></span>
+                    </div>
+                </div>
+
+                <!-- Advice content -->
+                <div id="advice-section">
+                    <!-- Loading skeleton -->
+                    <div id="advice-loading" class="space-y-3">
+                        <div class="skeleton-line w-full"></div>
+                        <div class="skeleton-line w-5/6"></div>
+                        <div class="skeleton-line w-4/6"></div>
+                        <div class="skeleton-line w-full"></div>
+                        <div class="skeleton-line w-3/5"></div>
+                    </div>
+                    <!-- Rendered advice -->
+                    <div id="advice-content" class="text-warmgray text-sm leading-relaxed hidden"></div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2" data-aos="fade-up" data-aos-delay="200">
+                <button id="reset-btn" class="gradient-btn px-6 py-3 rounded-xl font-semibold text-sm w-full sm:w-auto">New Analysis</button>
+                <button id="download-btn" class="px-6 py-3 rounded-xl border border-gray-300 text-warmgray text-sm font-semibold hover:border-teal hover:text-teal transition-colors w-full sm:w-auto">Download Report</button>
+            </div>
+        </section>
+
+        <!-- ════════ Disclaimer ════════ -->
+        <div class="mt-10 mb-6 rounded-xl bg-amber-50 border border-amber-200/60 px-5 py-4 flex gap-3 items-start" data-aos="fade-up" data-aos-delay="150">
+            <svg class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+            </svg>
+            <p class="text-amber-800 text-xs sm:text-sm leading-relaxed">This tool provides AI-generated insights only. It is not a substitute for professional medical diagnosis. Please consult a dermatologist for medical advice.</p>
+        </div>
+
+    </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}
