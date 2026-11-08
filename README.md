@@ -1,8 +1,16 @@
 # SkinCare AI — Intelligent Skin Disease Detection
 
+![SkinCare AI Banner](screenshots/banner.png)
+
 An AI-powered web application that detects and classifies **9 common skin conditions** using a dual-approach architecture — combining a locally-trained **PyTorch EfficientNet-B0** deep learning model with **Google Gemini Vision API** for intelligent diagnosis and personalized dermatological advice.
 
 I built this as a full-stack SaaS application from the ground up: trained the computer vision model, designed the hybrid prediction pipeline, developed the Flask backend, and crafted a modern responsive frontend — all containerized with Docker for easy deployment.
+
+### Video Demo
+
+[![Watch the Demo](screenshots/banner.png)](https://www.awesomescreenshot.com/video/50273742?key=c345bfaac98e052bd7f1388c268a91fe)
+
+> Click the image above to watch the full demo, or [click here](https://www.awesomescreenshot.com/video/50273742?key=c345bfaac98e052bd7f1388c268a91fe).
 
 ---
 
