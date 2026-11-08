@@ -159,20 +159,54 @@ A custom-trained **EfficientNet-B0** convolutional neural network that runs enti
 
 ---
 
+---
+
+### Approach 3: YOLOv8 Object Detection (Localization)
+
+I also trained a **YOLOv8 Medium** object detection model that goes beyond classification — it draws **bounding boxes** around affected skin areas, showing exactly *where* and *how much* of the skin is impacted. This is critical for clinical assessment.
+
+**How it works:**
+1. Image resized to **800x800** and passed through the YOLOv8m backbone (CSPDarknet)
+2. Multi-scale feature extraction at 3 levels (P3/P4/P5) for small, medium, and large lesions
+3. Feature Pyramid Network (FPN) + PANet fuses features across scales
+4. Anchor-free detection head predicts bounding boxes, objectness, and class probabilities
+5. Non-Maximum Suppression filters duplicate detections
+
+| Parameter | Value |
+|-----------|-------|
+| Architecture | YOLOv8m (Medium) |
+| Parameters | 25.8 Million |
+| GFLOPs | 78.7 |
+| Epochs | 80 |
+| Input Size | 800 x 800 px |
+| Classes | 11 (Acne, Eczema, Psoriasis, Ringworm, Vitiligo, Warts, + more) |
+| Inference Speed | **31.4ms/image** |
+
+**Benefits:**
+- **Localization** — shows *where* the condition is, not just *what* it is
+- **Multi-detection** — can find multiple conditions in a single image
+- **Spatial analysis** — bounding boxes reveal severity and spread
+- **Real-time capable** — 31ms inference on Tesla T4
+
+> Full training notebook, architecture details, and per-class metrics available in [`Yolo model Implementation/`](Yolo%20model%20Implementation/)
+
+---
+
 ### Head-to-Head Comparison
 
-| Feature | PyTorch (Local) | Gemini (Cloud) |
-|---------|:-:|:-:|
-| **Speed** | ~50ms | ~2-3s |
-| **Works Offline** | Yes | No |
-| **Cost** | Free | Pay-per-request |
-| **Accuracy** | 95.5% (fixed) | Context-aware |
-| **Output** | Class + Confidence | Class + Full Report |
-| **Privacy** | Images stay local | Sent to Google |
-| **Explanation** | None | Detailed clinical report |
-| **Edge Cases** | May struggle | Handles nuance |
+| Feature | EfficientNet-B0 (Local) | Gemini (Cloud) | YOLOv8m (Detection) |
+|---------|:-:|:-:|:-:|
+| **Task** | Classification | Classification + Advice | Detection + Localization |
+| **Speed** | ~50ms | ~2-3s | ~31ms |
+| **Works Offline** | Yes | No | Yes |
+| **Cost** | Free | Pay-per-request | Free |
+| **Output** | Class + Confidence | Class + Clinical Report | Bounding Boxes + Labels |
+| **Privacy** | Images stay local | Sent to Google | Images stay local |
+| **Multi-detection** | No (single label) | No (single label) | Yes (multiple regions) |
+| **Explanation** | None | Detailed clinical report | Visual localization |
+| **Parameters** | 11M | N/A (API) | 25.8M |
 
-> **The hybrid approach gives the best of both worlds:** Gemini provides intelligent classification and personalized advice when available, while the local PyTorch model ensures the app always works and provides reliable confidence scores.
+> **Three approaches, three strengths:** EfficientNet gives fast, reliable classification. Gemini adds intelligent context and clinical advice. YOLOv8 provides spatial localization showing exactly where conditions appear on the skin.
 
 ---
 
@@ -197,7 +231,7 @@ A custom-trained **EfficientNet-B0** convolutional neural network that runs enti
 | Layer | Technology |
 |-------|-----------|
 | **Backend** | Python 3.10, Flask |
-| **Deep Learning** | PyTorch, TorchVision, EfficientNet-B0 |
+| **Deep Learning** | PyTorch, TorchVision, EfficientNet-B0, YOLOv8 (Ultralytics) |
 | **Cloud AI** | Google Gemini 2.5 Flash (Vision + Text) |
 | **Image Processing** | Pillow (PIL) |
 | **Frontend** | Tailwind CSS v4, Vanilla JS |
@@ -284,6 +318,9 @@ skincare-ai/
 │       ├── base.html          # Base template, Tailwind config, global styles
 │       ├── landing.html       # Marketing landing page (8 sections)
 │       └── app.html           # Analysis app (upload → results → advice)
+├── Yolo model Implementation/
+│   ├── yolo_v8_skin_disease_detection.ipynb  # YOLOv8 training notebook
+│   └── README.md              # YOLO approach documentation
 ├── run.py                     # Entry point
 ├── requirements.txt           # Python dependencies
 ├── Dockerfile                 # CPU-optimized container
